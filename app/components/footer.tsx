@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Bottom() {
   return (
     <nav className="fixed bottom-0 left-1/2 z-20 w-full max-w-[430px] -translate-x-1/2 border-t border-[#f3c8da] bg-[#fffafb]">
-      <div className="grid h-24 grid-cols-3 items-center">
+      <div className="grid h-20 grid-cols-3 items-center">
         <Link
           href="/"
           className="flex flex-col items-center justify-center gap-1 text-[#f28db1]"
