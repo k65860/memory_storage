@@ -1,19 +1,21 @@
-import Link from "next/link";
+"use client";
 
-interface Memory {
+interface MemoryItem {
   id: number;
   title: string;
   description: string;
   date: string;
 }
 
-export default function MemoryCard({ memory }: { memory: Memory }) {
+interface MemoryCardProps {
+  memory: MemoryItem;
+  onTitleClick: (memory: MemoryItem) => void;
+}
+
+export default function MemoryCard({ memory, onTitleClick }: MemoryCardProps) {
   return (
-    <Link
-      href={`/memories/${memory.id}`}
-      className="block rounded-[24px] border border-[#f4cade] bg-[#fffafb] p-4 shadow-sm"
-    >
-      <article className="flex gap-4">
+    <article className="rounded-[24px] border border-[#f4cade] bg-[#fffafb] p-4 shadow-sm">
+      <div className="flex gap-4">
         <div className="flex h-[92px] w-[92px] shrink-0 items-center justify-center rounded-[18px] bg-[#f6cddd]">
           <div className="relative h-[70px] w-[70px] overflow-hidden rounded-[12px] bg-[#f4a6c3]">
             <div className="absolute bottom-0 left-0 h-10 w-10 rotate-45 bg-[#ec8eb3]" />
@@ -23,15 +25,21 @@ export default function MemoryCard({ memory }: { memory: Memory }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-[20px] font-bold leading-none text-[#f0629a]">
+          <button
+            type="button"
+            onClick={() => onTitleClick(memory)}
+            className="cursor-pointer truncate text-left text-[20px] font-bold leading-none text-[#f0629a]"
+          >
             {memory.title}
-          </h2>
+          </button>
+
           <p className="mt-3 text-lg text-[#7f6170]">{memory.description}</p>
+
           <p className="mt-3 text-sm font-medium text-[#f28db1]">
             {memory.date}
           </p>
         </div>
-      </article>
-    </Link>
+      </div>
+    </article>
   );
 }

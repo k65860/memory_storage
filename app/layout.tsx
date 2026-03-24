@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="min-h-dvh bg-[#f6f2f5] font-sans">
+      <body className="min-h-dvh bg-[#f6f2f5]">
         <div className="mx-auto min-h-dvh w-full max-w-[430px] bg-white shadow-sm md:min-h-[calc(100dvh-32px)] md:overflow-hidden md:rounded-[32px] md:border md:border-pink-100 md:shadow-xl">
           {children}
         </div>

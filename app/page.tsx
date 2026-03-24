@@ -6,8 +6,9 @@ import Footer from "@/app/components/footer";
 import SearchSection from "@/app/home/searchSection";
 import MemoryCard from "@/app/home/memoryCard";
 import SideBar from "@/app/components/sideBar";
+import EditMemoryModal, { MemoryItem } from "@/app/home/editMemoryModal";
 
-const memories = [
+const initialMemories: MemoryItem[] = [
   {
     id: 1,
     title: "우리의 첫 인생네컷",
@@ -32,22 +33,24 @@ const memories = [
     description: "여의도에서 벚꽃 구경",
     date: "2024.04.07",
   },
-  {
-    id: 5,
-    title: "여름 바다",
-    description: "강릉 바다 보러 간 날",
-    date: "2024.08.11",
-  },
-  {
-    id: 6,
-    title: "크리스마스",
-    description: "케이크랑 선물 교환",
-    date: "2024.12.25",
-  },
 ];
 
 export default function HomePage() {
   const [openDrawer, setOpenDrawer] = useState(false);
+  const [memories, setMemories] = useState(initialMemories);
+  const [selectedMemory, setSelectedMemory] = useState<MemoryItem | null>(null);
+  const [openModal, setOpenModal] = useState(false);
+
+  const handleOpenEditModal = (memory: MemoryItem) => {
+    setSelectedMemory(memory);
+    setOpenModal(true);
+  };
+
+  const handleSaveMemory = (updatedMemory: MemoryItem) => {
+    setMemories((prev) =>
+      prev.map((item) => (item.id === updatedMemory.id ? updatedMemory : item)),
+    );
+  };
 
   return (
     <div className="relative h-[100dvh] overflow-hidden">
@@ -61,7 +64,11 @@ export default function HomePage() {
         <section className="flex-1 overflow-y-auto px-5 pb-32">
           <div className="space-y-4">
             {memories.map((memory) => (
-              <MemoryCard key={memory.id} memory={memory} />
+              <MemoryCard
+                key={memory.id}
+                memory={memory}
+                onTitleClick={handleOpenEditModal}
+              />
             ))}
           </div>
         </section>
@@ -70,6 +77,13 @@ export default function HomePage() {
       </main>
 
       <SideBar open={openDrawer} onClose={() => setOpenDrawer(false)} />
+
+      <EditMemoryModal
+        open={openModal}
+        memory={selectedMemory}
+        onClose={() => setOpenModal(false)}
+        onSave={handleSaveMemory}
+      />
     </div>
   );
 }
