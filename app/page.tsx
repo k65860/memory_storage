@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Header from "@/app/components/header";
 import Footer from "@/app/components/footer";
 import SearchSection from "@/app/home/searchSection";
@@ -33,6 +33,18 @@ const initialMemories: MemoryItem[] = [
     description: "여의도에서 벚꽃 구경",
     date: "2024.04.07",
   },
+  {
+    id: 5,
+    title: "여름 바다",
+    description: "강릉 바다 보러 간 날",
+    date: "2024.08.11",
+  },
+  {
+    id: 6,
+    title: "크리스마스",
+    description: "케이크랑 선물 교환",
+    date: "2024.12.25",
+  },
 ];
 
 export default function HomePage() {
@@ -40,6 +52,17 @@ export default function HomePage() {
   const [memories, setMemories] = useState(initialMemories);
   const [selectedMemory, setSelectedMemory] = useState<MemoryItem | null>(null);
   const [openModal, setOpenModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredMemories = useMemo(() => {
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+
+    if (!normalizedSearchTerm) return memories;
+
+    return memories.filter((memory) =>
+      memory.title.toLowerCase().includes(normalizedSearchTerm),
+    );
+  }, [memories, searchTerm]);
 
   const handleOpenEditModal = (memory: MemoryItem) => {
     setSelectedMemory(memory);
@@ -58,19 +81,30 @@ export default function HomePage() {
         <Header onMenuClick={() => setOpenDrawer(true)} />
 
         <div className="shrink-0">
-          <SearchSection />
+          <SearchSection
+            searchTerm={searchTerm}
+            onChangeSearchTerm={setSearchTerm}
+          />
         </div>
 
         <section className="flex-1 overflow-y-auto px-5 pb-32">
-          <div className="space-y-4">
-            {memories.map((memory) => (
-              <MemoryCard
-                key={memory.id}
-                memory={memory}
-                onTitleClick={handleOpenEditModal}
-              />
-            ))}
-          </div>
+          {filteredMemories.length > 0 ? (
+            <div className="space-y-4">
+              {filteredMemories.map((memory) => (
+                <MemoryCard
+                  key={memory.id}
+                  memory={memory}
+                  onTitleClick={handleOpenEditModal}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex h-full items-start justify-center pt-16">
+              <p className="text-[16px] font-medium text-[#b79bab]">
+                추억이 없습니다.
+              </p>
+            </div>
+          )}
         </section>
 
         <Footer />
