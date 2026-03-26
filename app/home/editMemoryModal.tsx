@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, ImagePlus } from "lucide-react";
 import AlertModal from "@/app/components/alertModal";
 
 export interface MemoryItem {
@@ -9,6 +10,7 @@ export interface MemoryItem {
   title: string;
   description: string;
   date: string;
+  imageUrl?: string;
 }
 
 interface EditMemoryModalProps {
@@ -27,6 +29,7 @@ export default function EditMemoryModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
@@ -34,10 +37,19 @@ export default function EditMemoryModal({
       setTitle(memory.title);
       setDescription(memory.description);
       setDate(memory.date.replaceAll(".", "-"));
+      setImageUrl(memory.imageUrl || "");
     }
   }, [memory]);
 
   if (!open || !memory) return null;
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    setImageUrl(previewUrl);
+  };
 
   const handleSave = () => {
     onSave({
@@ -45,6 +57,7 @@ export default function EditMemoryModal({
       title,
       description,
       date: date.replaceAll("-", "."),
+      imageUrl,
     });
 
     setShowAlert(true);
@@ -52,15 +65,14 @@ export default function EditMemoryModal({
 
   return (
     <>
-      <div onClick={onClose} className="absolute inset-0 z-[70] bg-black/35" />
+      <div
+        onClick={onClose}
+        className="absolute inset-0 z-[70] bg-black/30 backdrop-blur-[2px]"
+      />
 
-      <div className="absolute inset-x-0 bottom-0 z-[80] px-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
-        <div className="mx-auto flex max-h-[85dvh] w-full max-w-[430px] flex-col rounded-t-[28px] rounded-b-[24px] bg-[#fffafb] shadow-2xl">
-          <div className="shrink-0 p-5 pb-4">
-            <div className="mb-4 flex justify-center">
-              <div className="h-1.5 w-12 rounded-full bg-pink-100" />
-            </div>
-
+      <div className="absolute inset-0 z-[80] flex items-center justify-center p-5">
+        <div className="flex max-h-[78dvh] w-full max-w-[380px] flex-col overflow-hidden rounded-[28px] border border-white/40 bg-[#fffafb]/95 shadow-[0_20px_50px_rgba(0,0,0,0.16)] backdrop-blur-xl">
+          <div className="shrink-0 border-b border-[#f3d6e2] px-5 py-4">
             <div className="flex items-center justify-between">
               <h2 className="text-[20px] font-bold text-[#ea79a7]">
                 추억 수정
@@ -70,15 +82,55 @@ export default function EditMemoryModal({
                 type="button"
                 onClick={onClose}
                 aria-label="모달 닫기"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-50 text-[#e486ab]"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-50 text-[#e486ab] transition active:scale-95"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5">
-            <div className="space-y-4 pb-5">
+          <div className="flex-1 overflow-y-auto px-5 py-5">
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[#9c7d8d]">
+                  대표 이미지
+                </label>
+
+                <div className="mb-3 flex w-full items-center justify-center">
+                  <div className="relative w-full max-w-[260px] aspect-square overflow-hidden rounded-[20px] border border-[#f3bfd5] bg-white">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt="추억 이미지 미리보기"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-[#f6cddd]">
+                        <div className="relative h-[70%] w-[70%] overflow-hidden rounded-[18px] bg-[#f4a6c3]">
+                          <div className="absolute bottom-0 left-0 h-10 w-10 rotate-45 bg-[#ec8eb3]" />
+                          <div className="absolute bottom-0 right-0 h-8 w-8 rotate-45 bg-[#e57ea9]" />
+                          <div className="absolute right-2 top-2 text-lg text-white">
+                            ♡
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[15px] font-medium text-[#9c7d8d] transition active:scale-95">
+                  <ImagePlus className="h-4 w-4" />
+                  이미지 변경
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
               <div>
                 <label className="mb-2 block text-sm font-medium text-[#9c7d8d]">
                   제목
@@ -86,7 +138,8 @@ export default function EditMemoryModal({
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[16px] outline-none"
+                  autoFocus
+                  className="w-full rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[16px] outline-none transition focus:border-[#f78db8] focus:ring-4 focus:ring-pink-100"
                 />
               </div>
 
@@ -97,7 +150,7 @@ export default function EditMemoryModal({
                 <input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[16px] outline-none"
+                  className="w-full rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[16px] outline-none transition focus:border-[#f78db8] focus:ring-4 focus:ring-pink-100"
                 />
               </div>
 
@@ -109,25 +162,25 @@ export default function EditMemoryModal({
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[16px] outline-none"
+                  className="w-full rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[16px] outline-none transition focus:border-[#f78db8] focus:ring-4 focus:ring-pink-100"
                 />
               </div>
             </div>
           </div>
 
-          <div className="shrink-0 px-5 pb-5 pt-3">
+          <div className="shrink-0 border-t border-[#f3d6e2] bg-[#fffafb]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl">
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-[18px] border border-[#f3bfd5] bg-white py-3 text-[16px] font-medium text-[#9c7d8d]"
+                className="rounded-[18px] border border-[#f3bfd5] bg-white py-3 text-[16px] font-medium text-[#9c7d8d] transition active:scale-95"
               >
                 취소
               </button>
               <button
                 type="button"
                 onClick={handleSave}
-                className="rounded-[18px] bg-[#f78db8] py-3 text-[16px] font-semibold text-white"
+                className="rounded-[18px] bg-[#f78db8] py-3 text-[16px] font-semibold text-white transition active:scale-95"
               >
                 저장
               </button>
