@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { X, ImagePlus } from "lucide-react";
 import AlertModal from "@/app/components/alertModal";
+import { uploadMemoryImage } from "@/lib/uploadMemoryImage";
 
 export interface MemoryItem {
   id: number;
@@ -31,6 +32,7 @@ export default function EditMemoryModal({
   const [date, setDate] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (memory) {
@@ -47,20 +49,33 @@ export default function EditMemoryModal({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const previewUrl = URL.createObjectURL(file);
-    setImageUrl(previewUrl);
+    setSelectedFile(file);
+
+    const preview = URL.createObjectURL(file);
+    setImageUrl(preview);
   };
 
-  const handleSave = () => {
-    onSave({
-      ...memory,
-      title,
-      description,
-      date: date.replaceAll("-", "."),
-      imageUrl,
-    });
+  const handleSave = async () => {
+    try {
+      let finalImageUrl = memory.imageUrl || "";
 
-    setShowAlert(true);
+      if (selectedFile) {
+        finalImageUrl = await uploadMemoryImage(selectedFile, "temp-user"); // 나중에 user.id로 변경
+      }
+
+      onSave({
+        ...memory,
+        title,
+        description,
+        date: date.replaceAll("-", "."),
+        imageUrl: finalImageUrl,
+      });
+
+      setShowAlert(true);
+    } catch (e) {
+      console.error(e);
+      alert("업로드 실패");
+    }
   };
 
   return (
