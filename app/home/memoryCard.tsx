@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export interface MemoryItem {
   id: number;
@@ -16,8 +17,17 @@ interface MemoryCardProps {
 }
 
 export default function MemoryCard({ memory, onTitleClick }: MemoryCardProps) {
+  const router = useRouter();
+
+  const handleCardClick = () => {
+    router.push(`/memories/${memory.id}`);
+  };
+
   return (
-    <article className="rounded-[24px] border border-[#f4cade] bg-[#fffafb] p-4 shadow-sm">
+    <article
+      onClick={handleCardClick}
+      className="cursor-pointer rounded-[24px] border border-[#f4cade] bg-[#fffafb] p-4 shadow-sm"
+    >
       <div className="flex gap-4">
         {memory.imageUrl ? (
           <div className="relative h-[92px] w-[92px] shrink-0 overflow-hidden rounded-[18px]">
@@ -41,7 +51,10 @@ export default function MemoryCard({ memory, onTitleClick }: MemoryCardProps) {
         <div className="min-w-0 flex-1">
           <button
             type="button"
-            onClick={() => onTitleClick(memory)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onTitleClick(memory);
+            }}
             className="cursor-pointer truncate text-left text-[20px] font-bold leading-none text-[#f0629a]"
           >
             {memory.title}

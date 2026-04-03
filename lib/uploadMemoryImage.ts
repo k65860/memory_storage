@@ -1,37 +1,24 @@
 import { supabase } from "@/lib/supabase/client";
 
 export async function uploadMemoryImage(file: File, userId: string) {
-  const fileExt = file.name.split(".").pop()?.toLowerCase() || "png";
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+  const fileExt = file.name.split(".").pop() || "png";
+  const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
   const filePath = `${userId}/${fileName}`;
 
-  console.log("업로드 시작");
-  console.log("bucket:", "memory-images");
-  console.log("filePath:", filePath);
-  console.log("file.type:", file.type);
-  console.log("file.size:", file.size);
-
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from("memory-images")
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      upsert: false,
-    });
+    .upload(filePath, file);
 
   if (error) {
-    console.error("Supabase upload error:", error);
-    throw new Error(error.message);
+    console.error("업로드 에러:", error);
+    throw new Error("이미지 업로드 실패");
   }
 
-  console.log("업로드 성공:", data);
-
-  const { data: publicUrlData } = supabase.storage
+  const { data } = supabase.storage
     .from("memory-images")
     .getPublicUrl(filePath);
 
-  console.log("publicUrl:", publicUrlData.publicUrl);
-
-  return publicUrlData.publicUrl;
+  return data.publicUrl;
 }
 
 /* 파일을 storage에 저장
