@@ -16,36 +16,42 @@ export default function HomePage() {
   const [openModal, setOpenModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchMemories = async () => {
-      setIsLoading(true);
+      try {
+        setIsLoading(true);
+        setError("");
 
-      const { data, error } = await supabase
-        .from("memories")
-        .select("id, title, description, memory_date, image_url")
-        .order("created_at", { ascending: false });
+        const { data, error: supabaseError } = await supabase
+          .from("memories")
+          .select("id, title, description, memory_date, image_url")
+          .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("추억 불러오기 실패:", error);
+        if (supabaseError) {
+          console.error("추억 불러오기 실패:", supabaseError);
+          setError("추억을 불러오지 못했습니다.");
+          return;
+        }
+
+        const mappedMemories: MemoryItem[] = (data || []).map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description ?? "",
+          date: item.memory_date
+            ? String(item.memory_date).replaceAll("-", ".")
+            : "",
+          imageUrl: item.image_url || "",
+        }));
+        setMemories(mappedMemories);
+      } catch (error) {
+        console.error("추억 불러오기 중 예상치 못한 오류:", error);
+        setError("알 수 없는 오류가 발생했습니다.");
+      } finally {
         setIsLoading(false);
-        return;
       }
-
-      const mappedMemories: MemoryItem[] = (data || []).map((item) => ({
-        id: item.id,
-        title: item.title,
-        description: item.description ?? "",
-        date: item.memory_date
-          ? String(item.memory_date).replaceAll("-", ".")
-          : "",
-        imageUrl: item.image_url || "",
-      }));
-
-      setMemories(mappedMemories);
-      setIsLoading(false);
     };
-
     fetchMemories();
   }, []);
 
