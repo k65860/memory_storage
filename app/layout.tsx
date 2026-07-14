@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "@fontsource/pretendard";
 
 //웹페이지 정보
 export const metadata: Metadata = {

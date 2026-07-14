@@ -1,18 +1,19 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
 import Image from "next/image";
 import {
   X,
   House,
-  Images,
   Share2,
-  CalendarDays,
-  Tags,
+  UserRound,
+  CircleHelp,
+  LogOut,
+  Heart,
   Bell,
   Palette,
   Mail,
-  LogOut,
-  Heart,
 } from "lucide-react";
 
 interface SideBarProps {
@@ -20,6 +21,7 @@ interface SideBarProps {
   onClose: () => void;
 }
 
+//임시 프로필 데이터
 const profile = {
   name: "지연",
   introduction: "우리의 추억을 기록해요",
@@ -27,6 +29,20 @@ const profile = {
 };
 
 export default function SideBar({ open, onClose }: SideBarProps) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("로그아웃 실패:", error);
+      return;
+    }
+
+    onClose();
+    router.replace("/auth/login");
+    router.refresh();
+  };
   return (
     <>
       <div
@@ -86,32 +102,35 @@ export default function SideBar({ open, onClose }: SideBarProps) {
         <nav className="flex-1 overflow-y-auto px-5 pb-5 pt-5">
           <div>
             <MenuItem icon={<House className="h-5 w-5" />} label="홈" active />
-            <MenuItem icon={<Images className="h-5 w-5" />} label="전체 추억" />
             <MenuItem
               icon={<Share2 className="h-5 w-5" />}
               label="공유한 추억"
             />
             <MenuItem
-              icon={<CalendarDays className="h-5 w-5" />}
-              label="이번 달 추억"
+              icon={<UserRound className="h-5 w-5" />}
+              label="내 정보"
             />
             <MenuItem
-              icon={<Tags className="h-5 w-5" />}
-              label="태그 모아보기"
+              icon={<CircleHelp className="h-5 w-5" />}
+              label="서비스 안내"
             />
           </div>
 
-          {/* <div className="my-5 h-px bg-[#f3d6e2]" />
+          <div className="my-5 h-px bg-[#f3d6e2]" />
 
           <div>
             <MenuItem icon={<Bell className="h-5 w-5" />} label="알림 설정" />
             <MenuItem icon={<Palette className="h-5 w-5" />} label="앱 테마" />
             <MenuItem icon={<Mail className="h-5 w-5" />} label="문의하기" />
-          </div> */}
+          </div>
 
           <div className="my-5 h-px bg-[#f3d6e2]" />
 
-          <button className="flex w-full items-center gap-4 rounded-[20px] px-4 py-4 text-[#e17aa4] transition hover:bg-pink-50">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-4 rounded-[20px] px-4 py-4 text-[#e17aa4] transition hover:bg-pink-50"
+          >
             <LogOut className="h-5 w-5" />
             <span className="text-[18px] font-semibold">로그아웃</span>
           </button>

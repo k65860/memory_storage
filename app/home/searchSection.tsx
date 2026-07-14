@@ -13,7 +13,7 @@ export default function SearchSection({
 }: SearchSectionProps) {
   return (
     <section className="px-5 py-5">
-      <div className="flex items-center gap-3 rounded-[16px] border-2 border-[#8bbbd0] bg-[#fffdf7] px-4 py-3 shadow-[3px_3px_0_#b7d9e8]">
+      <div className="flex items-center gap-3 rounded-[16px] border-2 border-[#f78db8] bg-[#fffdf7] px-4 py-3 shadow-[3px_3px_0_#b7d9e8]">
         <Search className="h-5 w-5 shrink-0 text-[#5aa8c8]" />
 
         <input

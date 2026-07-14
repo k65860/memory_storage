@@ -8,8 +8,11 @@ import MemoryCard from "@/app/home/memoryCard";
 import SideBar from "@/app/components/sideBar";
 import EditMemoryModal, { MemoryItem } from "@/app/home/editMemoryModal";
 import { supabase } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
+
   const [openDrawer, setOpenDrawer] = useState(false);
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [selectedMemory, setSelectedMemory] = useState<MemoryItem | null>(null);
@@ -17,6 +20,25 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        router.replace("/auth/login");
+        return;
+      }
+
+      setIsAuthChecking(false);
+    };
+
+    checkAuth();
+  }, [router]);
 
   useEffect(() => {
     const fetchMemories = async () => {
@@ -93,6 +115,16 @@ export default function HomePage() {
       console.error("DB 저장 실패:", error);
     }
   };
+
+  if (isAuthChecking) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-[#fff7fb]">
+        <p className="text-[15px] font-medium text-[#b79bab]">
+          로그인 정보를 확인하고 있습니다.
+        </p>
+      </main>
+    );
+  }
 
   return (
     <div className="relative h-[100dvh] overflow-hidden">
