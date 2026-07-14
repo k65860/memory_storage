@@ -4,8 +4,6 @@
 
 사진과 함께 소중한 추억을 기록하고 공유하는 모바일 웹 서비스
 
-<img src="./public/images/logo.png" width="120"/>
-
 </div>
 
 ---
