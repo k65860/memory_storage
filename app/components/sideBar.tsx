@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { getProfile } from "@/lib/api/profile";
 import Image from "next/image";
 import {
   X,
@@ -21,15 +23,50 @@ interface SideBarProps {
   onClose: () => void;
 }
 
+interface Profile {
+  id: string;
+  name: string;
+  profile_image_url: string | null;
+}
+
 //임시 프로필 데이터
-const profile = {
-  name: "지연",
-  introduction: "우리의 추억을 기록해요",
-  imageUrl: "",
-};
+// const profile = {
+//   name: "로그인/회원가입하기",
+//   introduction: "우리의 추억을 기록해요",
+//   profile_url: "",
+// };
 
 export default function SideBar({ open, onClose }: SideBarProps) {
+  const [profile, setProfile] = useState<Profile | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!open) return;
+
+    const fetchProfile = async () => {
+      // 로그인한 사용자 정보 가져옴
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("사용자 조회 실패:", userError);
+        return;
+      }
+
+      const { data, error: profileError } = await getProfile(user.id);
+
+      if (profileError) {
+        console.error("프로필 조회 실패:", profileError);
+        return;
+      }
+
+      setProfile(data);
+    };
+
+    fetchProfile();
+  }, [open]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -71,30 +108,32 @@ export default function SideBar({ open, onClose }: SideBarProps) {
         </div>
 
         <div className="px-5 pt-3">
-          <div className="rounded-[28px] bg-white px-4 py-4 shadow-sm">
+          <div className="rounded-[20px] bg-white px-4 py-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[#f8d4e3]">
-                {profile.imageUrl ? (
-                  <Image
-                    src={profile.imageUrl}
-                    alt={`${profile.name} 프로필 이미지`}
-                    width={64}
-                    height={64}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
+              {/* <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[#f8d4e3]"> */}
+              {profile?.profile_image_url ? (
+                <Image
+                  src={profile?.profile_image_url}
+                  alt="프로필 이미지"
+                  width={64}
+                  height={64}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div>
                   <Heart className="h-7 w-7 fill-[#f28db1] text-[#f28db1]" />
-                )}
-              </div>
+                  {/* <input type="image">이미지</input> */}
+                </div>
+              )}
+            </div>
 
-              <div>
-                <p className="text-[24px] font-bold leading-none text-[#ea79a7]">
-                  {profile.name}
-                </p>
-                <p className="mt-2 text-md text-[#9c7d8d]">
-                  {profile.introduction}
-                </p>
-              </div>
+            <div>
+              <p className="text-[24px] font-bold leading-none text-[#ea79a7]">
+                {profile?.name ?? "사용자"}
+              </p>
+              {/* <p className="mt-2 text-md text-[#9c7d8d]">
+                {profile.introduction}
+              </p> */}
             </div>
           </div>
         </div>

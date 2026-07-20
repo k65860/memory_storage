@@ -39,41 +39,58 @@ export default function NewMemoryPage() {
 
   const handleSave = async () => {
     if (!title.trim()) {
-      alert("제목을 입력해주세요.");
+      alert("제목을 입력해 주세요.");
       return;
     }
 
     if (!date) {
-      alert("날짜를 선택해주세요.");
+      alert("날짜를 선택해 주세요.");
       return;
     }
 
     try {
       setIsSaving(true);
 
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        alert("로그인이 필요합니다.");
+        router.replace("/auth/login");
+        return;
+      }
+
       let finalImageUrl = "";
 
       if (selectedFile) {
-        finalImageUrl = await uploadMemoryImage(selectedFile, "temp-user");
+        finalImageUrl = await uploadMemoryImage(selectedFile, user.id);
       }
 
-      const { error } = await supabase.from("memories").insert({
+      const { error: insertError } = await supabase.from("memories").insert({
+        user_id: user.id,
         title: title.trim(),
         description: description.trim(),
         memory_date: date,
         image_url: finalImageUrl || null,
       });
 
-      if (error) {
-        throw error;
+      if (insertError) {
+        throw insertError;
       }
 
-      alert("저장되었습니다!");
-      router.push("/");
+      alert("추억이 저장되었습니다.");
+      router.replace("/");
       router.refresh();
     } catch (error) {
       console.error("추억 추가 실패:", error);
-      alert("추억 저장 중 오류가 발생했습니다.");
+
+      alert(
+        error instanceof Error
+          ? `추억 저장 실패: ${error.message}`
+          : "추억 저장 중 오류가 발생했습니다.",
+      );
     } finally {
       setIsSaving(false);
     }

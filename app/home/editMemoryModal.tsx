@@ -60,7 +60,7 @@ export default function EditMemoryModal({
       let finalImageUrl = memory.imageUrl || "";
 
       if (selectedFile) {
-        finalImageUrl = await uploadMemoryImage(selectedFile, "temp-user"); // 나중에 user.id로 변경
+        finalImageUrl = await uploadMemoryImage(selectedFile, user.id);
       }
 
       onSave({

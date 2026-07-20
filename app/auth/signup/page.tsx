@@ -4,10 +4,12 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Heart } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import { getProfile } from "@/lib/api/profile";
 
 export default function SignUpPage() {
   const router = useRouter();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -19,7 +21,13 @@ export default function SignUpPage() {
     event.preventDefault();
     setMessage("");
 
+    const normalizedName = name.trim();
     const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedName) {
+      setMessage("이름을 입력해 주세요.");
+      return;
+    }
 
     if (!normalizedEmail) {
       setMessage("이메일을 입력해 주세요.");
@@ -38,17 +46,28 @@ export default function SignUpPage() {
 
     try {
       setIsSubmitting(true);
+      setMessage("");
 
-      const { data, error } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-      });
+      const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
+          options: {
+            data: {
+              name: normalizedName,
+            },
+          },
+        });
 
-      if (error) {
-        throw error;
+      if (signUpError) {
+        throw signUpError;
       }
 
-      if (data.session) {
+      if (!signUpData.user) {
+        throw new Error("회원 정보를 생성하지 못했습니다.");
+      }
+
+      if (signUpData.session) {
         router.replace("/");
         router.refresh();
         return;
@@ -88,6 +107,24 @@ export default function SignUpPage() {
         </div>
 
         <form onSubmit={handleSignUp} className="mt-7 space-y-4">
+          <div>
+            <label
+              htmlFor="signup-email"
+              className="mb-2 block text-[14px] font-medium text-[#8f7281]"
+            >
+              이름
+            </label>
+            <input
+              id="signup-name"
+              type="input"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              autoComplete="name"
+              inputMode="text"
+              placeholder="이름을 입력하세요."
+              className="w-full rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[16px] outline-none transition focus:border-[#f78db8] focus:ring-4 focus:ring-pink-100"
+            />
+          </div>
           <div>
             <label
               htmlFor="signup-email"

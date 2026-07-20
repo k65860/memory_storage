@@ -9,6 +9,7 @@ import SideBar from "@/app/components/sideBar";
 import EditMemoryModal, { MemoryItem } from "@/app/home/editMemoryModal";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { getMemories } from "@/lib/api/memories";
 
 export default function HomePage() {
   const router = useRouter();
@@ -19,65 +20,55 @@ export default function HomePage() {
   const [openModal, setOpenModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
+  // 로그인 확인 + 내 추억 조회
   useEffect(() => {
-    const checkAuth = async () => {
+    const fetchMyMemories = async () => {
+      setIsAuthChecking(true); //로그인 확인
+      setIsLoading(true); //추억 불러오기
+
       const {
         data: { user },
-        error,
+        error: userError,
       } = await supabase.auth.getUser();
 
-      if (error || !user) {
+      if (userError || !user) {
         router.replace("/auth/login");
         return;
       }
 
+      //API함수로 분리하기1
+      const { data, error: memoryError } = await getMemories(user.id);
+      if (memoryError) {
+        console.error("추억 불러오기 실패:", memoryError);
+        setMemories([]);
+        setIsAuthChecking(false);
+        setIsLoading(false);
+        return;
+      }
+
+      const mappedMemories: MemoryItem[] = (data ?? []).map((item) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description ?? "",
+        date: item.memory_date
+          ? String(item.memory_date).replaceAll("-", ".")
+          : "",
+        imageUrl: item.image_url ?? "",
+      }));
+
+      setMemories(mappedMemories);
       setIsAuthChecking(false);
+      setIsLoading(false);
     };
 
-    checkAuth();
+    fetchMyMemories();
   }, [router]);
 
-  useEffect(() => {
-    const fetchMemories = async () => {
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const { data, error: supabaseError } = await supabase
-          .from("memories")
-          .select("id, title, description, memory_date, image_url")
-          .order("created_at", { ascending: false });
-
-        if (supabaseError) {
-          console.error("추억 불러오기 실패:", supabaseError);
-          setError("추억을 불러오지 못했습니다.");
-          return;
-        }
-
-        const mappedMemories: MemoryItem[] = (data || []).map((item) => ({
-          id: item.id,
-          title: item.title,
-          description: item.description ?? "",
-          date: item.memory_date
-            ? String(item.memory_date).replaceAll("-", ".")
-            : "",
-          imageUrl: item.image_url || "",
-        }));
-        setMemories(mappedMemories);
-      } catch (error) {
-        console.error("추억 불러오기 중 예상치 못한 오류:", error);
-        setError("알 수 없는 오류가 발생했습니다.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchMemories();
-  }, []);
-
+  //추억 제목 필터링
   const filteredMemories = useMemo(() => {
+    //memories가 바뀌거나 searchTerm이 바뀔때만 다시 계산
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
     if (!normalizedSearchTerm) return memories;
@@ -94,6 +85,16 @@ export default function HomePage() {
 
   const handleSaveMemory = async (updatedMemory: MemoryItem) => {
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.replace("/auth/login");
+        return;
+      }
+
+      //api함수로 분리하기2
       const { error } = await supabase
         .from("memories")
         .update({
@@ -102,7 +103,8 @@ export default function HomePage() {
           memory_date: updatedMemory.date.replaceAll(".", "-"),
           image_url: updatedMemory.imageUrl || null,
         })
-        .eq("id", updatedMemory.id);
+        .eq("id", updatedMemory.id)
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
@@ -116,15 +118,15 @@ export default function HomePage() {
     }
   };
 
-  if (isAuthChecking) {
-    return (
-      <main className="flex min-h-dvh items-center justify-center bg-[#fff7fb]">
-        <p className="text-[15px] font-medium text-[#b79bab]">
-          로그인 정보를 확인하고 있습니다.
-        </p>
-      </main>
-    );
-  }
+  // if (isAuthChecking) {
+  //   return (
+  //     <main className="flex min-h-dvh items-center justify-center bg-[#fff7fb]">
+  //       <p className="text-[15px] font-medium text-[#b79bab]">
+  //         로그인 정보를 확인하고 있습니다.
+  //       </p>
+  //     </main>
+  //   );
+  // }
 
   return (
     <div className="relative h-[100dvh] overflow-hidden">
