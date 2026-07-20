@@ -56,6 +56,8 @@ export default function SideBar({ open, onClose }: SideBarProps) {
       }
 
       const { data, error: profileError } = await getProfile(user.id);
+      console.log("profile data:", data);
+      console.log("profile error:", profileError);
 
       if (profileError) {
         console.error("프로필 조회 실패:", profileError);
@@ -67,6 +69,11 @@ export default function SideBar({ open, onClose }: SideBarProps) {
 
     fetchProfile();
   }, [open]);
+
+  const handleNavigateToMypage = () => {
+    onClose();
+    router.push("/mypage");
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -115,9 +122,9 @@ export default function SideBar({ open, onClose }: SideBarProps) {
                 <Image
                   src={profile?.profile_image_url}
                   alt="프로필 이미지"
-                  width={64}
-                  height={64}
-                  className="h-full w-full object-cover"
+                  width={60}
+                  height={60}
+                  className="object-cover"
                 />
               ) : (
                 <div>
@@ -125,15 +132,12 @@ export default function SideBar({ open, onClose }: SideBarProps) {
                   {/* <input type="image">이미지</input> */}
                 </div>
               )}
-            </div>
-
-            <div>
-              <p className="text-[24px] font-bold leading-none text-[#ea79a7]">
+              <p
+                className="cursor-pointer text-[24px] font-bold leading-none text-[#ea79a7]"
+                onClick={handleNavigateToMypage}
+              >
                 {profile?.name ?? "사용자"}
               </p>
-              {/* <p className="mt-2 text-md text-[#9c7d8d]">
-                {profile.introduction}
-              </p> */}
             </div>
           </div>
         </div>
