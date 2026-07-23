@@ -40,3 +40,4 @@ export async function updateMemories(
 export async function deleteMemories(id: string, userId: string) {
   return supabase.from("memories").delete().eq("id", id);
 }
+``;
