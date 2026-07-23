@@ -1,10 +1,6 @@
-<div align="center">
-
 # 💖 추억저장소 (Memory Storage)
 
 사진과 함께 소중한 추억을 기록하고 공유하는 모바일 웹 서비스
-
-</div>
 
 ---
 
