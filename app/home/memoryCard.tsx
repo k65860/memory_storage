@@ -16,7 +16,7 @@ interface MemoryCardProps {
   onTitleClick: (memory: MemoryItem) => void;
 }
 
-export default function MemoryCard({ memory, onTitleClick }: MemoryCardProps) {
+export default function MemoryCard({ memory }: MemoryCardProps) {
   const router = useRouter();
 
   const handleCardClick = () => {
@@ -51,10 +51,10 @@ export default function MemoryCard({ memory, onTitleClick }: MemoryCardProps) {
         <div className="min-w-0 flex-1">
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onTitleClick(memory);
-            }}
+            // onClick={(e) => {
+            //   e.stopPropagation();
+            //   onTitleClick(memory);
+            // }}
             className="cursor-pointer truncate text-left text-[20px] font-bold leading-none text-[#f0629a]"
           >
             {memory.title}

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ImagePlus } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { uploadMemoryImage } from "@/lib/uploadMemoryImage";
+import { uploadMemoryImage } from "@/hooks/uploadMemoryImage";
 
 export default function NewMemoryPage() {
   const router = useRouter();

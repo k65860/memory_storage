@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
+import EditMemoryModal from "@/app/home/editMemoryModal";
+
 interface MemoryDetail {
   id: number;
   title: string;
@@ -21,6 +23,7 @@ export default function MemoryDetailPage({
   const router = useRouter();
   const [memory, setMemory] = useState<MemoryDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [editMemory, setEditMemory] = useState(false);
 
   useEffect(() => {
     const fetchMemory = async () => {
@@ -88,6 +91,7 @@ export default function MemoryDetailPage({
 
         <button
           type="button"
+          onClick={() => setEditMemory(true)}
           className="rounded-[16px] bg-[#f78db8] px-4 py-2 text-[14px] font-semibold text-white"
         >
           수정

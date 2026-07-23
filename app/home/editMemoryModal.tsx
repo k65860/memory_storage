@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { X, ImagePlus } from "lucide-react";
 import AlertModal from "@/app/components/alertModal";
-import { uploadMemoryImage } from "@/lib/uploadMemoryImage";
+import { uploadMemoryImage } from "@/hooks/uploadMemoryImage";
 
 export interface MemoryItem {
   id: number;

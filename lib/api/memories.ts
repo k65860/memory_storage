@@ -30,8 +30,7 @@ export async function updateMemories(
     .update({
       title: updatedMemories.title,
       description: updatedMemories.description,
-      memory_date: updatedMemories.memory_date.replaceAll(".", "-"),
-      image_url: updatedMemories.image_url || null,
+      memory_date: updatedMemories.memory_date?.replaceAll(".", "-") ?? null,
     })
     .eq("id", updatedMemories.id)
     .eq("user_id", userId);
