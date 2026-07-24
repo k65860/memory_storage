@@ -2,18 +2,10 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-
-export interface MemoryItem {
-  id: number;
-  title: string;
-  description: string;
-  date: string;
-  imageUrl?: string;
-}
+import { MemoryItem } from "@/app/types/memory";
 
 interface MemoryCardProps {
   memory: MemoryItem;
-  onTitleClick: (memory: MemoryItem) => void;
 }
 
 export default function MemoryCard({ memory }: MemoryCardProps) {
@@ -29,10 +21,10 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
       className="cursor-pointer rounded-[24px] border border-[#f4cade] bg-[#fffafb] p-4 shadow-sm"
     >
       <div className="flex gap-4">
-        {memory.imageUrl ? (
+        {memory.image_url ? (
           <div className="relative h-[92px] w-[92px] shrink-0 overflow-hidden rounded-[18px]">
             <Image
-              src={memory.imageUrl}
+              src={memory.image_url}
               alt={`${memory.title} 이미지`}
               fill
               className="object-cover"
@@ -63,7 +55,7 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
           <p className="mt-3 text-lg text-[#7f6170]">{memory.description}</p>
 
           <p className="mt-3 text-sm font-medium text-[#f28db1]">
-            {memory.date}
+            {memory.memory_date}
           </p>
         </div>
       </div>

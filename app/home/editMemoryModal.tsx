@@ -1,49 +1,29 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { X, ImagePlus } from "lucide-react";
 import AlertModal from "@/app/components/alertModal";
 import { uploadMemoryImage } from "@/hooks/uploadMemoryImage";
-
-export interface MemoryItem {
-  id: number;
-  title: string;
-  description: string;
-  date: string;
-  imageUrl?: string;
-}
+import { MemoryItem } from "@/app/types/memory";
 
 interface EditMemoryModalProps {
-  open: boolean;
-  memory: MemoryItem | null;
+  memory: MemoryItem;
   onClose: () => void;
-  onSave: (updatedMemory: MemoryItem) => void;
+  onSave: (updatedMemory: MemoryItem) => void | Promise<void>;
 }
 
 export default function EditMemoryModal({
-  open,
   memory,
   onClose,
   onSave,
 }: EditMemoryModalProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [title, setTitle] = useState(memory.title);
+  const [description, setDescription] = useState(memory.description ?? "");
+  const [date, setDate] = useState(memory.memory_date || "");
+  const [imageUrl, setImageUrl] = useState(memory.image_url || "");
   const [showAlert, setShowAlert] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  useEffect(() => {
-    if (memory) {
-      setTitle(memory.title);
-      setDescription(memory.description);
-      setDate(memory.date.replaceAll(".", "-"));
-      setImageUrl(memory.imageUrl || "");
-    }
-  }, [memory]);
-
-  if (!open || !memory) return null;
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,18 +37,18 @@ export default function EditMemoryModal({
 
   const handleSave = async () => {
     try {
-      let finalImageUrl = memory.imageUrl || "";
+      let finalImageUrl = memory.image_url || "";
 
       if (selectedFile) {
-        finalImageUrl = await uploadMemoryImage(selectedFile, user.id);
+        finalImageUrl = await uploadMemoryImage(selectedFile, memory.user_id);
       }
 
-      onSave({
+      await onSave({
         ...memory,
         title,
         description,
-        date: date.replaceAll("-", "."),
-        imageUrl: finalImageUrl,
+        memory_date: date || null,
+        image_url: finalImageUrl,
       });
 
       setShowAlert(true);
@@ -105,12 +85,8 @@ export default function EditMemoryModal({
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 py-5">
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#9c7d8d]">
-                  대표 이미지
-                </label>
-
                 <div className="mb-3 flex w-full items-center justify-center">
                   <div className="relative w-full max-w-[260px] aspect-square overflow-hidden rounded-[20px] border border-[#f3bfd5] bg-white">
                     {imageUrl ? (
@@ -118,7 +94,7 @@ export default function EditMemoryModal({
                         src={imageUrl}
                         alt="추억 이미지 미리보기"
                         fill
-                        className="object-cover"
+                        className="object-contain"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-[#f6cddd]">
@@ -148,23 +124,25 @@ export default function EditMemoryModal({
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-[#9c7d8d]">
-                  제목
+                  추억 이름을 입력해주세요.
                 </label>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   autoFocus
+                  placeholder="제목을 입력하세요."
                   className="w-full rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[16px] outline-none transition focus:border-[#f78db8] focus:ring-4 focus:ring-pink-100"
                 />
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-[#9c7d8d]">
-                  설명
+                  추억을 기록해보세요.
                 </label>
                 <input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  placeholder="설명을 입력하세요."
                   className="w-full rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[16px] outline-none transition focus:border-[#f78db8] focus:ring-4 focus:ring-pink-100"
                 />
               </div>

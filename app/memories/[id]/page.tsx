@@ -4,16 +4,9 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-
+import { MemoryItem } from "@/app/types/memory";
+import { updateMemory } from "@/lib/api/memories";
 import EditMemoryModal from "@/app/home/editMemoryModal";
-
-interface MemoryDetail {
-  id: number;
-  title: string;
-  description: string;
-  memory_date: string | null;
-  image_url: string | null;
-}
 
 export default function MemoryDetailPage({
   params,
@@ -21,9 +14,9 @@ export default function MemoryDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
-  const [memory, setMemory] = useState<MemoryDetail | null>(null);
+  const [memory, setMemory] = useState<MemoryItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [editMemory, setEditMemory] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchMemory = async () => {
@@ -31,8 +24,11 @@ export default function MemoryDetailPage({
 
       const { data, error } = await supabase
         .from("memories")
-        .select("id, title, description, memory_date, image_url")
+        .select(
+          "id, title, description, memory_date, image_url, created_at, user_id",
+        )
         .eq("id", resolvedParams.id)
+        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
         .single();
 
       if (error) {
@@ -40,13 +36,36 @@ export default function MemoryDetailPage({
         setIsLoading(false);
         return;
       }
-
       setMemory(data);
       setIsLoading(false);
     };
 
     fetchMemory();
   }, [params]);
+
+  const handleSaveMemory = async (updatedMemory: MemoryItem) => {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      // 로그인한 사용자가 없으면 홈으로 이동
+      if (userError || !user) {
+        router.replace("/auth/login");
+        return;
+      }
+
+      const { data, error } = await updateMemory(updatedMemory, user.id);
+
+      if (error) throw error;
+
+      setMemory(data);
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error("DB 저장 실패:", error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -91,11 +110,19 @@ export default function MemoryDetailPage({
 
         <button
           type="button"
-          onClick={() => setEditMemory(true)}
+          onClick={() => setIsEditModalOpen(true)}
           className="rounded-[16px] bg-[#f78db8] px-4 py-2 text-[14px] font-semibold text-white"
         >
           수정
         </button>
+        {isEditModalOpen && memory && (
+          <EditMemoryModal
+            key={memory.id}
+            memory={memory}
+            onClose={() => setIsEditModalOpen(false)}
+            onSave={handleSaveMemory}
+          />
+        )}
       </div>
 
       <section className="overflow-hidden rounded-[28px] border border-[#f4cade] bg-white shadow-sm">

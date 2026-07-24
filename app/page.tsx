@@ -6,7 +6,7 @@ import Footer from "@/app/components/footer";
 import SearchSection from "@/app/home/searchSection";
 import MemoryCard from "@/app/home/memoryCard";
 import SideBar from "@/app/components/sideBar";
-import EditMemoryModal, { MemoryItem } from "@/app/home/editMemoryModal";
+import { MemoryItem } from "@/app/types/memory";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { getMemories } from "@/lib/api/memories";
@@ -38,7 +38,6 @@ export default function HomePage() {
         return;
       }
 
-      //API함수로 분리하기1
       const { data, error: memoryError } = await getMemories(user.id);
       if (memoryError) {
         console.error("추억 불러오기 실패:", memoryError);
@@ -48,17 +47,7 @@ export default function HomePage() {
         return;
       }
 
-      const mappedMemories: MemoryItem[] = (data ?? []).map((item) => ({
-        id: item.id,
-        title: item.title,
-        description: item.description ?? "",
-        date: item.memory_date
-          ? String(item.memory_date).replaceAll("-", ".")
-          : "",
-        imageUrl: item.image_url ?? "",
-      }));
-
-      setMemories(mappedMemories);
+      setMemories(data || []);
       setIsAuthChecking(false);
       setIsLoading(false);
     };
@@ -83,40 +72,40 @@ export default function HomePage() {
     setOpenModal(true);
   };
 
-  const handleSaveMemory = async (updatedMemory: MemoryItem) => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  // const handleSaveMemory = async (updatedMemory: MemoryItem) => {
+  //   try {
+  //     const {
+  //       data: { user },
+  //     } = await supabase.auth.getUser();
 
-      if (!user) {
-        router.replace("/auth/login");
-        return;
-      }
+  //     if (!user) {
+  //       router.replace("/auth/login");
+  //       return;
+  //     }
 
-      //api함수로 분리하기2
-      const { error } = await supabase
-        .from("memories")
-        .update({
-          title: updatedMemory.title,
-          description: updatedMemory.description,
-          memory_date: updatedMemory.date.replaceAll(".", "-"),
-          image_url: updatedMemory.imageUrl || null,
-        })
-        .eq("id", updatedMemory.id)
-        .eq("user_id", user.id);
+  //     //api함수로 분리하기2
+  //     const { error } = await supabase
+  //       .from("memories")
+  //       .update({
+  //         title: updatedMemory.title,
+  //         description: updatedMemory.description,
+  //         memory_date: updatedMemory.memory_date?.replaceAll(".", "-") || null,
+  //         image_url: updatedMemory.image_url || null,
+  //       })
+  //       .eq("id", updatedMemory.id)
+  //       .eq("user_id", user.id);
 
-      if (error) throw error;
+  //     if (error) throw error;
 
-      setMemories((prev) =>
-        prev.map((item) =>
-          item.id === updatedMemory.id ? updatedMemory : item,
-        ),
-      );
-    } catch (error) {
-      console.error("DB 저장 실패:", error);
-    }
-  };
+  //     setMemories((prev) =>
+  //       prev.map((item) =>
+  //         item.id === updatedMemory.id ? updatedMemory : item,
+  //       ),
+  //     );
+  //   } catch (error) {
+  //     console.error("DB 저장 실패:", error);
+  //   }
+  // };
 
   // if (isAuthChecking) {
   //   return (
@@ -150,11 +139,7 @@ export default function HomePage() {
           ) : filteredMemories.length > 0 ? (
             <div className="space-y-4">
               {filteredMemories.map((memory) => (
-                <MemoryCard
-                  key={memory.id}
-                  memory={memory}
-                  onTitleClick={handleOpenEditModal}
-                />
+                <MemoryCard key={memory.id} memory={memory} />
               ))}
             </div>
           ) : (
@@ -171,12 +156,12 @@ export default function HomePage() {
 
       <SideBar open={openDrawer} onClose={() => setOpenDrawer(false)} />
 
-      <EditMemoryModal
+      {/* <EditMemoryModal
         open={openModal}
         memory={selectedMemory}
         onClose={() => setOpenModal(false)}
         onSave={handleSaveMemory}
-      />
+      /> */}
     </div>
   );
 }
