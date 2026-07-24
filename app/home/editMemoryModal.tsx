@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import { X, ImagePlus } from "lucide-react";
+import { useState, useRef } from "react";
+import { Camera, ImagePlus, X } from "lucide-react";
 import AlertModal from "@/app/components/alertModal";
 import { uploadMemoryImage } from "@/hooks/uploadMemoryImage";
 import { MemoryItem } from "@/app/types/memory";
@@ -24,6 +24,7 @@ export default function EditMemoryModal({
   const [imageUrl, setImageUrl] = useState(memory.image_url || "");
   const [showAlert, setShowAlert] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -35,6 +36,12 @@ export default function EditMemoryModal({
     setImageUrl(preview);
   };
 
+  const isChanged =
+    title !== memory.title ||
+    description !== (memory.description ?? "") ||
+    date !== (memory.memory_date ?? "") ||
+    selectedFile !== null;
+
   const handleSave = async () => {
     try {
       let finalImageUrl = memory.image_url || "";
@@ -45,11 +52,13 @@ export default function EditMemoryModal({
 
       await onSave({
         ...memory,
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         memory_date: date || null,
-        image_url: finalImageUrl,
+        image_url: finalImageUrl || null,
       });
+
+      setShowAlert(true);
 
       setShowAlert(true);
     } catch (e) {
@@ -87,39 +96,48 @@ export default function EditMemoryModal({
           <div className="flex-1 overflow-y-auto px-5 py-5">
             <div className="space-y-6">
               <div>
-                <div className="mb-3 flex w-full items-center justify-center">
-                  <div className="relative w-full max-w-[260px] aspect-square overflow-hidden rounded-[20px] border border-[#f3bfd5] bg-white">
+                {/* <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative mx-auto block h-[210px] w-full max-w-[260px] overflow-hidden rounded-[20px] border border-[#f3bfd5] bg-[#fff5f9]"
+                  aria-label="추억 이미지 변경"
+                > */}
+                <div className="relative mx-auto w-full max-w-[260px]">
+                  <div className="relative h-[210px] w-full overflow-hidden rounded-[20px] border border-[#f3bfd5] bg-[#fff5f9]">
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
                         alt="추억 이미지 미리보기"
                         fill
-                        className="object-contain"
+                        sizes="260px"
+                        onContextMenu={(e) => e.preventDefault()}
+                        className="object-contain p-3"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-[#f6cddd]">
-                        <div className="relative h-[70%] w-[70%] overflow-hidden rounded-[18px] bg-[#f4a6c3]">
-                          <div className="absolute bottom-0 left-0 h-10 w-10 rotate-45 bg-[#ec8eb3]" />
-                          <div className="absolute bottom-0 right-0 h-8 w-8 rotate-45 bg-[#e57ea9]" />
-                          <div className="absolute right-2 top-2 text-lg text-white">
-                            ♡
-                          </div>
-                        </div>
+                      <div className="flex h-full flex-col items-center justify-center gap-2 text-[#c18da3]">
+                        <ImagePlus className="h-8 w-8" />
+                        <span className="text-sm">사진을 추가해 주세요</span>
                       </div>
                     )}
                   </div>
-                </div>
 
-                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-[18px] border border-[#f3bfd5] bg-white px-4 py-3 text-[15px] font-medium text-[#9c7d8d] transition active:scale-95">
-                  <ImagePlus className="h-4 w-4" />
-                  이미지 변경
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="이미지 변경"
+                    className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#ef78a8] shadow-md transition active:scale-95"
+                  >
+                    <Camera className="h-5 w-5" />
+                  </button>
+
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
                     className="hidden"
                   />
-                </label>
+                </div>
               </div>
 
               <div>
@@ -173,7 +191,12 @@ export default function EditMemoryModal({
               <button
                 type="button"
                 onClick={handleSave}
-                className="rounded-[18px] bg-[#f78db8] py-3 text-[16px] font-semibold text-white transition active:scale-95"
+                disabled={!isChanged}
+                className={`rounded-[18px] py-3 text-[16px] font-semibold transition ${
+                  isChanged
+                    ? "bg-[#f78db8] text-white active:scale-95"
+                    : "cursor-not-allowed bg-gray-200 text-gray-400"
+                }`}
               >
                 저장
               </button>
