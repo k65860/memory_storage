@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { MemoryItem } from "@/app/types/memory";
 import { updateMemory } from "@/lib/api/memories";
-import EditMemoryModal from "@/app/home/editMemoryModal";
+import EditMemoryModal from "@/app/memories/[id]/editMemoryModal";
+import { MoreVertical } from "lucide-react";
 
 export default function MemoryDetailPage({
   params,
@@ -17,6 +18,7 @@ export default function MemoryDetailPage({
   const [memory, setMemory] = useState<MemoryItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState(false);
 
   useEffect(() => {
     const fetchMemory = async () => {
@@ -123,16 +125,23 @@ export default function MemoryDetailPage({
             onSave={handleSaveMemory}
           />
         )}
+
+        {/* <button
+          onClick={() => setOpenMenu(true)}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-100"
+        >
+          <MoreVertical className="w-5 h-5" />
+        </button> */}
       </div>
 
       <section className="overflow-hidden rounded-[28px] border border-[#f4cade] bg-white shadow-sm">
-        <div className="relative aspect-square w-full bg-[#f6cddd]">
+        <div className="relative aspect-square w-full">
           {memory.image_url ? (
             <Image
               src={memory.image_url}
               alt={memory.title}
               fill
-              className="object-cover"
+              className="object-contain p-3"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
@@ -150,16 +159,9 @@ export default function MemoryDetailPage({
         <div className="space-y-5 px-5 py-6">
           <div>
             <p className="text-[13px] font-medium text-[#b79bab]">제목</p>
-            <h1 className="mt-1 text-[28px] font-bold leading-tight text-[#f0629a]">
+            <h1 className="mt-1 text-[26px] font-bold leading-tight text-[#f0629a]">
               {memory.title}
             </h1>
-          </div>
-
-          <div>
-            <p className="text-[13px] font-medium text-[#b79bab]">설명</p>
-            <p className="mt-1 text-[18px] leading-relaxed text-[#7f6170]">
-              {memory.description || "설명이 없습니다."}
-            </p>
           </div>
 
           <div>
@@ -168,6 +170,13 @@ export default function MemoryDetailPage({
               {memory.memory_date
                 ? String(memory.memory_date).replaceAll("-", ".")
                 : "날짜 없음"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-[13px] font-medium text-[#b79bab]">설명</p>
+            <p className="mt-1 text-[18px] leading-relaxed text-[#7f6170]">
+              {memory.description || "설명이 없습니다."}
             </p>
           </div>
         </div>

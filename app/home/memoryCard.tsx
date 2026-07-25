@@ -47,12 +47,14 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
             //   e.stopPropagation();
             //   onTitleClick(memory);
             // }}
-            className="cursor-pointer truncate text-left text-[20px] font-bold leading-none text-[#f0629a]"
+            className="cursor-pointer truncate text-left text-[16px] font-bold leading-none text-[#f0629a]"
           >
             {memory.title}
           </button>
 
-          <p className="mt-3 text-lg text-[#7f6170]">{memory.description}</p>
+          <p className="mt-3 text-[14px] text-[#7f6170]">
+            {memory.description}
+          </p>
 
           <p className="mt-3 text-sm font-medium text-[#f28db1]">
             {memory.memory_date}
