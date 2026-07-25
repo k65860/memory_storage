@@ -18,7 +18,7 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
   return (
     <article
       onClick={handleCardClick}
-      className="cursor-pointer rounded-[24px] border border-[#f4cade] bg-[#fffafb] p-4 shadow-sm"
+      className="cursor-pointer rounded-[24px] border border-[#f4cade] bg-white p-4 shadow-sm"
     >
       <div className="flex gap-4">
         {memory.image_url ? (
