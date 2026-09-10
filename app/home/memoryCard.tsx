@@ -6,9 +6,13 @@ import { MemoryItem } from "@/app/types/memory";
 
 interface MemoryCardProps {
   memory: MemoryItem;
+  isLcpCandidate?: boolean;
 }
 
-export default function MemoryCard({ memory }: MemoryCardProps) {
+export default function MemoryCard({
+  memory,
+  isLcpCandidate = false,
+}: MemoryCardProps) {
   const router = useRouter();
 
   const handleCardClick = () => {
@@ -27,6 +31,9 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
               src={memory.image_url}
               alt={`${memory.title} 이미지`}
               fill
+              sizes="92px"
+              loading={isLcpCandidate ? "eager" : "lazy"}
+              fetchPriority={isLcpCandidate ? "high" : "auto"}
               className="object-cover"
             />
           </div>

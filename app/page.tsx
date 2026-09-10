@@ -67,6 +67,8 @@ export default function HomePage() {
     );
   }, [memories, searchTerm]);
 
+  const firstImageMemoryId = memories.find((memory) => memory.image_url)?.id;
+
   const handleOpenEditModal = (memory: MemoryItem) => {
     setSelectedMemory(memory);
     setOpenModal(true);
@@ -139,7 +141,11 @@ export default function HomePage() {
           ) : filteredMemories.length > 0 ? (
             <div className="space-y-4">
               {filteredMemories.map((memory) => (
-                <MemoryCard key={memory.id} memory={memory} />
+                <MemoryCard
+                  key={memory.id}
+                  memory={memory}
+                  isLcpCandidate={memory.id === firstImageMemoryId}
+                />
               ))}
             </div>
           ) : (
