@@ -28,10 +28,14 @@ export default function HomePage() {
       setIsAuthChecking(true); //로그인 확인
       setIsLoading(true); //추억 불러오기
 
+      // getUser()는 매번 Supabase Auth 서버에 요청을 보내 첫 화면이 그만큼 늦어짐
+      // getSession()은 브라우저에 저장된 세션을 읽으므로 네트워크 왕복이 없음
+      // 데이터 접근 권한은 RLS(auth.uid() = user_id)가 서버에서 계속 검증함
       const {
-        data: { user },
+        data: { session },
         error: userError,
-      } = await supabase.auth.getUser();
+      } = await supabase.auth.getSession();
+      const user = session?.user;
 
       if (userError || !user) {
         router.replace("/auth/login");
@@ -67,7 +71,13 @@ export default function HomePage() {
     );
   }, [memories, searchTerm]);
 
-  const firstImageMemoryId = memories.find((memory) => memory.image_url)?.id;
+  // 첫 화면(모바일 기준 카드 3장)에 보이는 이미지는 lazy 없이 바로 요청
+  const aboveTheFoldImageIds = new Set(
+    memories
+      .filter((memory) => memory.image_url)
+      .slice(0, 3)
+      .map((memory) => memory.id),
+  );
 
   const handleOpenEditModal = (memory: MemoryItem) => {
     setSelectedMemory(memory);
@@ -144,7 +154,7 @@ export default function HomePage() {
                 <MemoryCard
                   key={memory.id}
                   memory={memory}
-                  isLcpCandidate={memory.id === firstImageMemoryId}
+                  isLcpCandidate={aboveTheFoldImageIds.has(memory.id)}
                 />
               ))}
             </div>
